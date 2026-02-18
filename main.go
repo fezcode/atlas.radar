@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -63,7 +64,7 @@ func main() {
 		fmt.Println("  atlas.radar                          # Scan current directory")
 		fmt.Println("  atlas.radar --table                  # Show results in a table")
 		fmt.Println("  atlas.radar --show unclean --watch   # Monitor only dirty repos")
-		fmt.Println("  atlas.radar --fetch                  # Fetch all repositories")
+		fmt.Println("  atlas.radar --fetch --pattern atlas  # Fetch only 'atlas.*' repos")
 	}
 
 	showFlag := flag.String("show", "all", "Filter repositories (all, clean, unclean)")
@@ -72,6 +73,7 @@ func main() {
 	fetchFlag := flag.Bool("fetch", false, "Fetch updates for all repositories")
 	pullFlag := flag.Bool("pull", false, "Pull updates for all repositories")
 	pushFlag := flag.Bool("push", false, "Push updates for all repositories")
+	patternFlag := flag.String("pattern", "", "Regex pattern to match repository names")
 	flag.Parse()
 
 	targetDir := "."
@@ -85,8 +87,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	var re *regexp.Regexp
+	if *patternFlag != "" {
+		re, err = regexp.Compile(*patternFlag)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error compiling regex: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
 	if *fetchFlag || *pullFlag || *pushFlag {
-		handleBulkOperations(absDir, *fetchFlag, *pullFlag, *pushFlag)
+		handleBulkOperations(absDir, *fetchFlag, *pullFlag, *pushFlag, re)
 		return
 	}
 
@@ -101,6 +112,10 @@ func main() {
 
 		for _, entry := range entries {
 			if !entry.IsDir() {
+				continue
+			}
+
+			if re != nil && !re.MatchString(entry.Name()) {
 				continue
 			}
 
@@ -150,11 +165,14 @@ func main() {
 		if *showFlag != "all" {
 			fmt.Printf("Filtering: %s\n", *showFlag)
 		}
+		if re != nil {
+			fmt.Printf("Pattern: %s\n", *patternFlag)
+		}
 		
 		if *tableFlag {
 			renderTable(statuses)
 		} else {
-			if !*watchFlag {
+			if !*watchFlag && len(statuses) > 0 {
 				fmt.Println()
 			}
 			for _, s := range statuses {
@@ -180,7 +198,6 @@ func renderTable(statuses []*GitStatus) {
 			remoteParts = append(remoteParts, behindStyle.Render(fmt.Sprintf("↓%d", s.Behind)))
 		}
 		remote := strings.Join(remoteParts, " ")
-		// Use empty string for synced to keep table clean
 
 		changes := ""
 		if s.IsDirty {
@@ -227,7 +244,7 @@ func renderTable(statuses []*GitStatus) {
 	fmt.Println(t.Render())
 }
 
-func handleBulkOperations(absDir string, fetch, pull, push bool) {
+func handleBulkOperations(absDir string, fetch, pull, push bool, re *regexp.Regexp) {
 	entries, err := os.ReadDir(absDir)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading directory: %v\n", err)
@@ -239,6 +256,10 @@ func handleBulkOperations(absDir string, fetch, pull, push bool) {
 
 	for _, entry := range entries {
 		if !entry.IsDir() {
+			continue
+		}
+
+		if re != nil && !re.MatchString(entry.Name()) {
 			continue
 		}
 
