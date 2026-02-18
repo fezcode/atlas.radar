@@ -1,5 +1,7 @@
 # atlas.radar
 
+![banner image](./banner.png)
+
 **atlas.radar** is a fast, minimalist Git status monitoring tool. It scans a directory for subdirectories containing `.git` repositories and provides a real-time summary of their current status.
 
 ## Features
