@@ -1,0 +1,13 @@
+(name) atlas.radar
+(version) 0.1.0
+(description) A tool to monitor git statuses across multiple repositories.
+(license) MIT
+(repository) github.com/fezcode/atlas.radar
+(authors)
+    > Me <me@example.com>
+(keywords)
+    > cli
+    > tool
+    > golang
+(tools)
+    > github.com/golangci/golangci-lint/cmd/golangci-lint@latest

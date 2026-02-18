@@ -1,0 +1,8 @@
+bin/
+build/
+.idea/
+.vscode/
+*.exe
+*.test
+__debug_bin
+.gobake/

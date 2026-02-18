@@ -1,0 +1,46 @@
+# atlas.radar
+
+**atlas.radar** is a fast, minimalist Git status monitoring tool. It scans a directory for subdirectories containing `.git` repositories and provides a real-time summary of their current status.
+
+## Features
+
+- **Concise UI:** Minimalist, color-coded status reports.
+- **Remote Tracking:** Automatically shows `ahead` (↑) and `behind` (↓) counts.
+- **Change Counting:** Displays counts for added (+), modified (~), and deleted (-) files.
+- **Filtering:** Use `--show` to filter by clean or unclean repositories.
+- **Watch Mode:** Use `--watch` to continuously monitor your projects.
+
+## Usage
+
+```bash
+# Basic usage (scans the current directory)
+atlas.radar
+
+# Scan a specific directory
+atlas.radar D:\Workhammer
+
+# Show only unclean repositories
+atlas.radar --show unclean
+
+# Continuous monitoring
+atlas.radar --watch
+```
+
+### Options
+
+| Option | Description | Values | Default |
+| :--- | :--- | :--- | :--- |
+| `--show` | Filter repository display | `all`, `clean`, `unclean` | `all` |
+| `--watch` | Monitor status continuously | `true`, `false` | `false` |
+
+## Build
+
+Built with [gobake](https://github.com/fezcode/gobake).
+
+```bash
+gobake build
+```
+
+## License
+
+MIT
