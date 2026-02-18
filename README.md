@@ -32,6 +32,7 @@ atlas.radar --watch
 | :--- | :--- | :--- | :--- |
 | `--show` | Filter repository display | `all`, `clean`, `unclean` | `all` |
 | `--watch` | Monitor status continuously | `true`, `false` | `false` |
+| `--table` | Display results in a table | `true`, `false` | `false` |
 | `--fetch` | Fetch all updates from remotes | `true`, `false` | `false` |
 | `--pull` | Pull all updates from remotes | `true`, `false` | `false` |
 | `--push` | Push all local updates to remotes | `true`, `false` | `false` |

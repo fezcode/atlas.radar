@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
 )
 
 var (
@@ -37,9 +38,13 @@ var (
 
 	behindStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#FFAF00"))
+
+	timeStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#555555"))
 )
 
 type GitStatus struct {
+	Name     string
 	Branch   string
 	IsDirty  bool
 	Ahead    int
@@ -56,13 +61,14 @@ func main() {
 		flag.PrintDefaults()
 		fmt.Println("\nExamples:")
 		fmt.Println("  atlas.radar                          # Scan current directory")
-		fmt.Println("  atlas.radar D:\\Projects              # Scan specific directory")
+		fmt.Println("  atlas.radar --table                  # Show results in a table")
 		fmt.Println("  atlas.radar --show unclean --watch   # Monitor only dirty repos")
 		fmt.Println("  atlas.radar --fetch                  # Fetch all repositories")
 	}
 
 	showFlag := flag.String("show", "all", "Filter repositories (all, clean, unclean)")
 	watchFlag := flag.Bool("watch", false, "Continuously monitor status")
+	tableFlag := flag.Bool("table", false, "Display results in a table")
 	fetchFlag := flag.Bool("fetch", false, "Fetch updates for all repositories")
 	pullFlag := flag.Bool("pull", false, "Pull updates for all repositories")
 	pushFlag := flag.Bool("push", false, "Push updates for all repositories")
@@ -79,28 +85,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Handle one-time operations: fetch, pull, push
 	if *fetchFlag || *pullFlag || *pushFlag {
 		handleBulkOperations(absDir, *fetchFlag, *pullFlag, *pushFlag)
 		return
 	}
 
 	for {
-		if *watchFlag {
-			clearScreen()
-		}
-
-		fmt.Println(titleStyle.Render("Radar") + " scanning " + absDir)
-		if *showFlag != "all" {
-			fmt.Printf("Filtering: %s\n", *showFlag)
-		}
-		fmt.Println()
-
 		entries, err := os.ReadDir(absDir)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error reading directory: %v\n", err)
 			os.Exit(1)
 		}
+
+		var statuses []*GitStatus
 
 		for _, entry := range entries {
 			if !entry.IsDir() {
@@ -118,6 +115,7 @@ func main() {
 			if err != nil {
 				continue
 			}
+			status.Name = entry.Name()
 
 			// Filter logic
 			shouldShow := true
@@ -133,7 +131,34 @@ func main() {
 			}
 
 			if shouldShow {
-				printStatus(entry.Name(), status)
+				statuses = append(statuses, status)
+			}
+		}
+
+		// Clear only right before printing new data
+		if *watchFlag {
+			clearScreen()
+		}
+
+		now := time.Now().Format("15:04:05")
+		header := titleStyle.Render("Radar") + " " + absDir
+		if *watchFlag {
+			header += " " + timeStyle.Render("["+now+"]")
+		}
+		fmt.Println(header)
+
+		if *showFlag != "all" {
+			fmt.Printf("Filtering: %s\n", *showFlag)
+		}
+		
+		if *tableFlag {
+			renderTable(statuses)
+		} else {
+			if !*watchFlag {
+				fmt.Println()
+			}
+			for _, s := range statuses {
+				printStatus(s)
 			}
 		}
 
@@ -142,6 +167,64 @@ func main() {
 		}
 		time.Sleep(2 * time.Second)
 	}
+}
+
+func renderTable(statuses []*GitStatus) {
+	var rows [][]string
+	for _, s := range statuses {
+		remoteParts := []string{}
+		if s.Ahead > 0 {
+			remoteParts = append(remoteParts, aheadStyle.Render(fmt.Sprintf("↑%d", s.Ahead)))
+		}
+		if s.Behind > 0 {
+			remoteParts = append(remoteParts, behindStyle.Render(fmt.Sprintf("↓%d", s.Behind)))
+		}
+		remote := strings.Join(remoteParts, " ")
+		// Use empty string for synced to keep table clean
+
+		changes := ""
+		if s.IsDirty {
+			var details []string
+			if s.Added > 0 {
+				details = append(details, fmt.Sprintf("+%d", s.Added))
+			}
+			if s.Modified > 0 {
+				details = append(details, fmt.Sprintf("~%d", s.Modified))
+			}
+			if s.Deleted > 0 {
+				details = append(details, fmt.Sprintf("-%d", s.Deleted))
+			}
+			changes = dirtyStyle.Render(strings.Join(details, " "))
+		} else {
+			changes = cleanStyle.Render("clean")
+		}
+
+		rows = append(rows, []string{
+			s.Name,
+			s.Branch,
+			changes,
+			remote,
+		})
+	}
+
+	t := table.New().
+		Border(lipgloss.NormalBorder()).
+		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("#333333"))).
+		Headers("REPOSITORY", "BRANCH", "CHANGES", "REMOTE").
+		Rows(rows...)
+
+	t.StyleFunc(func(row, col int) lipgloss.Style {
+		style := lipgloss.NewStyle().Padding(0, 1)
+		if row == 0 {
+			return style.Bold(true).Align(lipgloss.Left)
+		}
+		if col == 0 {
+			return style.Bold(true)
+		}
+		return style
+	})
+
+	fmt.Println(t.Render())
 }
 
 func handleBulkOperations(absDir string, fetch, pull, push bool) {
@@ -255,22 +338,15 @@ func getGitStatus(path string) (*GitStatus, error) {
 	return status, nil
 }
 
-func printStatus(name string, status *GitStatus) {
-	nameDisplay := repoStyle.Render(name)
+func printStatus(status *GitStatus) {
+	nameDisplay := repoStyle.Render(status.Name)
 	branchDisplay := branchStyle.Render("(" + status.Branch + ")")
 
 	var statusParts []string
 
-	if status.Ahead > 0 {
-		statusParts = append(statusParts, aheadStyle.Render(fmt.Sprintf("↑%d", status.Ahead)))
-	}
-	if status.Behind > 0 {
-		statusParts = append(statusParts, behindStyle.Render(fmt.Sprintf("↓%d", status.Behind)))
-	}
-
-	if !status.IsDirty && status.Ahead == 0 && status.Behind == 0 {
+	if !status.IsDirty {
 		statusParts = append(statusParts, cleanStyle.Render("clean"))
-	} else if status.IsDirty {
+	} else {
 		var details []string
 		if status.Added > 0 {
 			details = append(details, fmt.Sprintf("+%d", status.Added))
@@ -282,6 +358,13 @@ func printStatus(name string, status *GitStatus) {
 			details = append(details, fmt.Sprintf("-%d", status.Deleted))
 		}
 		statusParts = append(statusParts, dirtyStyle.Render(strings.Join(details, " ")))
+	}
+
+	if status.Ahead > 0 {
+		statusParts = append(statusParts, aheadStyle.Render(fmt.Sprintf("↑%d", status.Ahead)))
+	}
+	if status.Behind > 0 {
+		statusParts = append(statusParts, behindStyle.Render(fmt.Sprintf("↓%d", status.Behind)))
 	}
 
 	fmt.Printf("%s %s %s\n", nameDisplay, branchDisplay, strings.Join(statusParts, " "))
