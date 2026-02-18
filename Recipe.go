@@ -44,8 +44,9 @@ func Run(bake *gobake.Engine) error {
 				output += ".exe"
 			}
 
+			ldflags := "-s -w -X main.Version=" + bake.Info.Version
 			ctx.Env = []string{"CGO_ENABLED=0"}
-			err := ctx.BakeBinary(t.os, t.arch, output)
+			err := ctx.Run("go", "build", "-ldflags", ldflags, "-o", output, "main.go")
 			if err != nil {
 				return err
 			}

@@ -15,6 +15,8 @@ import (
 )
 
 var (
+	Version = "dev"
+
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("#7D56F4")).
@@ -74,7 +76,13 @@ func main() {
 	pullFlag := flag.Bool("pull", false, "Pull updates for all repositories")
 	pushFlag := flag.Bool("push", false, "Push updates for all repositories")
 	patternFlag := flag.String("pattern", "", "Regex pattern to match repository names")
+	versionFlag := flag.Bool("version", false, "Show version information")
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Printf("atlas.radar v%s\n", Version)
+		return
+	}
 
 	targetDir := "."
 	if flag.NArg() > 0 {
