@@ -32,6 +32,24 @@ atlas.radar --watch
 | :--- | :--- | :--- | :--- |
 | `--show` | Filter repository display | `all`, `clean`, `unclean` | `all` |
 | `--watch` | Monitor status continuously | `true`, `false` | `false` |
+| `--fetch` | Fetch all updates from remotes | `true`, `false` | `false` |
+| `--pull` | Pull all updates from remotes | `true`, `false` | `false` |
+| `--push` | Push all local updates to remotes | `true`, `false` | `false` |
+
+## Bulk Operations
+
+You can perform Git operations across all detected repositories:
+
+```bash
+# Fetch updates for all projects
+atlas.radar --fetch
+
+# Pull updates for all projects
+atlas.radar --pull
+
+# Push updates for all projects
+atlas.radar --push
+```
 
 ## Build
 

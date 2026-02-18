@@ -50,8 +50,22 @@ type GitStatus struct {
 }
 
 func main() {
+	flag.Usage = func() {
+		fmt.Printf("Usage: %s [options] [directory]\n\n", os.Args[0])
+		fmt.Println("Options:")
+		flag.PrintDefaults()
+		fmt.Println("\nExamples:")
+		fmt.Println("  atlas.radar                          # Scan current directory")
+		fmt.Println("  atlas.radar D:\\Projects              # Scan specific directory")
+		fmt.Println("  atlas.radar --show unclean --watch   # Monitor only dirty repos")
+		fmt.Println("  atlas.radar --fetch                  # Fetch all repositories")
+	}
+
 	showFlag := flag.String("show", "all", "Filter repositories (all, clean, unclean)")
 	watchFlag := flag.Bool("watch", false, "Continuously monitor status")
+	fetchFlag := flag.Bool("fetch", false, "Fetch updates for all repositories")
+	pullFlag := flag.Bool("pull", false, "Pull updates for all repositories")
+	pushFlag := flag.Bool("push", false, "Push updates for all repositories")
 	flag.Parse()
 
 	targetDir := "."
@@ -63,6 +77,12 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error getting absolute path: %v\n", err)
 		os.Exit(1)
+	}
+
+	// Handle one-time operations: fetch, pull, push
+	if *fetchFlag || *pullFlag || *pushFlag {
+		handleBulkOperations(absDir, *fetchFlag, *pullFlag, *pushFlag)
+		return
 	}
 
 	for {
@@ -122,6 +142,56 @@ func main() {
 		}
 		time.Sleep(2 * time.Second)
 	}
+}
+
+func handleBulkOperations(absDir string, fetch, pull, push bool) {
+	entries, err := os.ReadDir(absDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading directory: %v\n", err)
+		return
+	}
+
+	successCount := 0
+	failCount := 0
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		repoPath := filepath.Join(absDir, entry.Name())
+		gitPath := filepath.Join(repoPath, ".git")
+
+		if _, err := os.Stat(gitPath); os.IsNotExist(err) {
+			continue
+		}
+
+		var cmd *exec.Cmd
+		var opName string
+
+		if fetch {
+			opName = "fetch"
+			cmd = exec.Command("git", "fetch")
+		} else if pull {
+			opName = "pull"
+			cmd = exec.Command("git", "pull")
+		} else if push {
+			opName = "push"
+			cmd = exec.Command("git", "push")
+		}
+
+		cmd.Dir = repoPath
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("%s [%s]: %s\n", dirtyStyle.Render("FAIL"), opName, repoStyle.Render(entry.Name()))
+			failCount++
+		} else {
+			fmt.Printf("%s [%s]: %s\n", cleanStyle.Render("OK"), opName, repoStyle.Render(entry.Name()))
+			successCount++
+		}
+	}
+
+	fmt.Println()
+	fmt.Printf("Total: %d successful, %d failed\n", successCount, failCount)
 }
 
 func clearScreen() {
