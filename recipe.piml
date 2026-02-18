@@ -1,10 +1,11 @@
 (name) atlas.radar
-(version) 0.1.0
+(version) 0.1.1
 (description) A tool to monitor git statuses across multiple repositories.
 (license) MIT
 (repository) github.com/fezcode/atlas.radar
 (authors)
-    > Me <me@example.com>
+    > fezcode
+    > Gemini CLI
 (keywords)
     > cli
     > tool
