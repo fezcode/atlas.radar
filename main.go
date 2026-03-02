@@ -184,8 +184,25 @@ func main() {
 			if !*watchFlag && len(statuses) > 0 {
 				fmt.Println()
 			}
-			for _, s := range statuses {
+			
+			// Pagination for watch mode
+			displayStatuses := statuses
+			if *watchFlag {
+				termHeight := 24 // Fallback
+				// Try to get terminal height (lipgloss doesn't provide it directly here without tea)
+				// For now use a conservative limit or just print all if not watch
+				limit := termHeight - 5
+				if len(statuses) > limit {
+					displayStatuses = statuses[:limit]
+				}
+			}
+
+			for _, s := range displayStatuses {
 				printStatus(s)
+			}
+			
+			if len(statuses) > len(displayStatuses) {
+				fmt.Printf(timeStyle.Render("\n... %d more repositories hidden ...\n"), len(statuses)-len(displayStatuses))
 			}
 		}
 
