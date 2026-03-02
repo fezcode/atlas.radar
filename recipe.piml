@@ -1,14 +1,14 @@
 (name) atlas.radar
-(version) 0.1.1
+(version) 0.1.2
 (description) A tool to monitor git statuses across multiple repositories.
+(authors)
+  > fezcode
+  > Gemini CLI
 (license) MIT
 (repository) github.com/fezcode/atlas.radar
-(authors)
-    > fezcode
-    > Gemini CLI
 (keywords)
-    > cli
-    > tool
-    > golang
+  > cli
+  > tool
+  > golang
 (tools)
-    > github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+  > github.com/golangci/golangci-lint/cmd/golangci-lint@latest

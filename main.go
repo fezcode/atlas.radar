@@ -19,7 +19,8 @@ var (
 
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(lipgloss.Color("#7D56F4")).
+			Foreground(lipgloss.Color("#FFFDF5")).
+			Background(lipgloss.Color("#6B50FF")).
 			Padding(0, 1)
 
 	repoStyle = lipgloss.NewStyle().
@@ -28,10 +29,10 @@ var (
 			Padding(0, 1)
 
 	branchStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#888888"))
+			Foreground(lipgloss.Color("#626262"))
 
 	cleanStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#04B575"))
+			Foreground(lipgloss.Color("#00D787"))
 
 	dirtyStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#FF5F87"))
@@ -43,7 +44,7 @@ var (
 			Foreground(lipgloss.Color("#FFAF00"))
 
 	timeStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#555555"))
+			Foreground(lipgloss.Color("#626262"))
 )
 
 type GitStatus struct {
