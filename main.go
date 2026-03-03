@@ -59,6 +59,29 @@ type GitStatus struct {
 }
 
 func main() {
+	if len(os.Args) > 1 && (os.Args[1] == "-v" || os.Args[1] == "--version") {
+		fmt.Printf("atlas.radar v%s\n", Version)
+		return
+	}
+	if len(os.Args) > 1 && (os.Args[1] == "-h" || os.Args[1] == "--help" || os.Args[1] == "help") {
+		fmt.Printf("Atlas Radar - Git workspace monitor for multiple repositories.\n\n")
+		fmt.Printf("Usage: %s [options] [directory]\n\n", os.Args[0])
+		fmt.Println("Options:")
+		fmt.Println("  -show string       Filter repositories (all, clean, unclean) (default \"all\")")
+		fmt.Println("  -watch             Continuously monitor status")
+		fmt.Println("  -table             Display results in a table")
+		fmt.Println("  -fetch             Fetch updates for all repositories")
+		fmt.Println("  -pull              Pull updates for all repositories")
+		fmt.Println("  -push              Push updates for all repositories")
+		fmt.Println("  -pattern string    Regex pattern to match repository names")
+		fmt.Println("  -version           Show version information")
+		fmt.Println("\nExamples:")
+		fmt.Println("  atlas.radar                          # Scan current directory")
+		fmt.Println("  atlas.radar ./projects               # Scan specific directory")
+		fmt.Println("  atlas.radar --table                  # Show results in a table")
+		return
+	}
+
 	flag.Usage = func() {
 		fmt.Printf("Usage: %s [options] [directory]\n\n", os.Args[0])
 		fmt.Println("Options:")
