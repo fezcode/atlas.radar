@@ -8,6 +8,7 @@
 
 - **Concise UI:** Minimalist, color-coded status reports.
 - **Remote Tracking:** Automatically shows `ahead` (↑) and `behind` (↓) counts.
+- **Repository Summary:** Shows a total count of repositories found at the bottom of the output.
 - **Change Counting:** Displays counts for added (+), modified (~), and deleted (-) files.
 - **Filtering:** Use `--show` to filter by clean or unclean repositories.
 - **Watch Mode:** Use `--watch` to continuously monitor your projects.

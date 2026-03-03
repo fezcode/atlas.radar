@@ -65,6 +65,7 @@ func main() {
 		flag.PrintDefaults()
 		fmt.Println("\nExamples:")
 		fmt.Println("  atlas.radar                          # Scan current directory")
+		fmt.Println("  atlas.radar ./projects               # Scan specific directory")
 		fmt.Println("  atlas.radar --table                  # Show results in a table")
 		fmt.Println("  atlas.radar --show unclean --watch   # Monitor only dirty repos")
 		fmt.Println("  atlas.radar --fetch --pattern atlas  # Fetch only 'atlas.*' repos")
@@ -204,6 +205,12 @@ func main() {
 			if len(statuses) > len(displayStatuses) {
 				fmt.Printf(timeStyle.Render("\n... %d more repositories hidden ...\n"), len(statuses)-len(displayStatuses))
 			}
+		}
+
+		if len(statuses) > 0 {
+			fmt.Printf("\n%s %d repositories found\n", titleStyle.Render("Summary"), len(statuses))
+		} else {
+			fmt.Printf("\n%s No repositories found\n", dirtyStyle.Render("Empty"))
 		}
 
 		if !*watchFlag {
