@@ -56,6 +56,7 @@ type GitStatus struct {
 	Modified int
 	Added    int
 	Deleted  int
+	Remotes  int
 }
 
 func main() {
@@ -246,15 +247,6 @@ func main() {
 func renderTable(statuses []*GitStatus) {
 	var rows [][]string
 	for _, s := range statuses {
-		remoteParts := []string{}
-		if s.Ahead > 0 {
-			remoteParts = append(remoteParts, aheadStyle.Render(fmt.Sprintf("↑%d", s.Ahead)))
-		}
-		if s.Behind > 0 {
-			remoteParts = append(remoteParts, behindStyle.Render(fmt.Sprintf("↓%d", s.Behind)))
-		}
-		remote := strings.Join(remoteParts, " ")
-
 		changes := ""
 		if s.IsDirty {
 			var details []string
@@ -276,14 +268,14 @@ func renderTable(statuses []*GitStatus) {
 			s.Name,
 			s.Branch,
 			changes,
-			remote,
+			fmt.Sprintf("%d", s.Remotes),
 		})
 	}
 
 	t := table.New().
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("#333333"))).
-		Headers("REPOSITORY", "BRANCH", "CHANGES", "REMOTE").
+		Headers("REPOSITORY", "BRANCH", "CHANGES", "REMOTES").
 		Rows(rows...)
 
 	t.StyleFunc(func(row, col int) lipgloss.Style {
@@ -359,6 +351,16 @@ func clearScreen() {
 }
 
 func getGitStatus(path string) (*GitStatus, error) {
+	// Get remote count
+	remoteCmd := exec.Command("git", "remote")
+	remoteCmd.Dir = path
+	remoteOut, _ := remoteCmd.Output()
+	remotes := strings.Split(strings.TrimSpace(string(remoteOut)), "\n")
+	remoteCount := 0
+	if len(remotes) > 0 && remotes[0] != "" {
+		remoteCount = len(remotes)
+	}
+
 	cmd := exec.Command("git", "status", "--branch", "--porcelain")
 	cmd.Dir = path
 	out, err := cmd.Output()
@@ -371,7 +373,7 @@ func getGitStatus(path string) (*GitStatus, error) {
 		return nil, fmt.Errorf("empty status output")
 	}
 
-	status := &GitStatus{}
+	status := &GitStatus{Remotes: remoteCount}
 
 	// Parse branch info
 	branchLine := lines[0]
@@ -443,6 +445,12 @@ func printStatus(status *GitStatus) {
 	if status.Behind > 0 {
 		statusParts = append(statusParts, behindStyle.Render(fmt.Sprintf("↓%d", status.Behind)))
 	}
+
+	remoteLabel := "remotes"
+	if status.Remotes == 1 {
+		remoteLabel = "remote"
+	}
+	statusParts = append(statusParts, branchStyle.Render(fmt.Sprintf("%d %s", status.Remotes, remoteLabel)))
 
 	fmt.Printf("%s %s %s\n", nameDisplay, branchDisplay, strings.Join(statusParts, " "))
 }
