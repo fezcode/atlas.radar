@@ -75,10 +75,12 @@ func main() {
 		fmt.Println("  -pull              Pull updates for all repositories")
 		fmt.Println("  -push              Push updates for all repositories")
 		fmt.Println("  -pattern string    Regex pattern to match repository names")
+		fmt.Println("  -remote int        Filter by number of remotes (default -1)")
 		fmt.Println("  -version           Show version information")
 		fmt.Println("\nExamples:")
 		fmt.Println("  atlas.radar                          # Scan current directory")
-		fmt.Println("  atlas.radar ./projects               # Scan specific directory")
+		fmt.Println("  atlas.radar --remote 0               # Show only local-only repos")
+		fmt.Println("  atlas.radar --remote 1               # Show only repos with exactly 1 remote")
 		fmt.Println("  atlas.radar --table                  # Show results in a table")
 		return
 	}
@@ -89,7 +91,7 @@ func main() {
 		flag.PrintDefaults()
 		fmt.Println("\nExamples:")
 		fmt.Println("  atlas.radar                          # Scan current directory")
-		fmt.Println("  atlas.radar ./projects               # Scan specific directory")
+		fmt.Println("  atlas.radar --remote 1               # Show only repos with exactly 1 remote")
 		fmt.Println("  atlas.radar --table                  # Show results in a table")
 		fmt.Println("  atlas.radar --show unclean --watch   # Monitor only dirty repos")
 		fmt.Println("  atlas.radar --fetch --pattern atlas  # Fetch only 'atlas.*' repos")
@@ -102,6 +104,7 @@ func main() {
 	pullFlag := flag.Bool("pull", false, "Pull updates for all repositories")
 	pushFlag := flag.Bool("push", false, "Push updates for all repositories")
 	patternFlag := flag.String("pattern", "", "Regex pattern to match repository names")
+	remoteFlag := flag.Int("remote", -1, "Filter by number of remotes")
 	versionFlag := flag.Bool("version", false, "Show version information")
 	flag.Parse()
 
@@ -175,6 +178,12 @@ func main() {
 				}
 			case "unclean":
 				if !status.IsDirty && status.Ahead == 0 && status.Behind == 0 {
+					shouldShow = false
+				}
+			}
+
+			if shouldShow {
+				if *remoteFlag != -1 && status.Remotes != *remoteFlag {
 					shouldShow = false
 				}
 			}

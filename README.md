@@ -1,69 +1,78 @@
-# atlas.radar
+# Atlas Radar
 
-![banner image](./banner.png)
+![Banner Image](./banner.png)
 
-**atlas.radar** is a fast, minimalist Git status monitoring tool. It scans a directory for subdirectories containing `.git` repositories and provides a real-time summary of their current status.
+> [!IMPORTANT]
+> **atlas.radar** is part of the **Atlas Suite**—a collection of high-visibility, local-first terminal utilities designed for power users who demand precision and aesthetic clarity.
 
-## Features
+**atlas.radar** is a high-performance Git workspace monitor that provides a bird's-eye view of all repositories within a directory. It instantly identifies dirty working trees, ahead/behind counts, and current branches, allowing you to manage large project folders with zero cognitive overhead.
 
-- **Concise UI:** Minimalist, color-coded status reports.
-- **Remote Tracking:** Automatically shows `ahead` (↑) and `behind` (↓) counts.
-- **Repository Summary:** Shows a total count of repositories found at the bottom of the output.
-- **Change Counting:** Displays counts for added (+), modified (~), and deleted (-) files.
-- **Filtering:** Use `--show` to filter by clean or unclean repositories.
-- **Watch Mode:** Use `--watch` to continuously monitor your projects.
+![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)
+![Build System](https://img.shields.io/badge/build-gobake-gold)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
 
-## Usage
+## ✨ Key Features
 
+- 📡 **Deep Scanning:** Recursively identifies every Git repository in a workspace.
+- 🔄 **Real-time Monitoring:** Use `--watch` to keep an eye on your projects as you code.
+- 📊 **Table View:** Clean, structured tabular output for comprehensive auditing.
+- 🚀 **Bulk Operations:** Fetch, Pull, or Push across multiple repositories simultaneously.
+- 🔍 **Filtering:** Filter by repository name (regex) or remote count.
+- 🎨 **High-Visibility UI:** Uses the Atlas "Onyx & Gold" aesthetic for maximum readability.
+
+## 🚀 Installation
+
+### Using Gobake (Recommended)
 ```bash
-# Basic usage (scans the current directory)
-atlas.radar
-
-# Scan a specific directory
-atlas.radar D:\Workhammer
-
-# Show only unclean repositories
-atlas.radar --show unclean
-
-# Continuous monitoring
-atlas.radar --watch
-```
-
-### Options
-
-| Option | Description | Values | Default |
-| :--- | :--- | :--- | :--- |
-| `--show` | Filter repository display | `all`, `clean`, `unclean` | `all` |
-| `--watch` | Monitor status continuously | `true`, `false` | `false` |
-| `--table` | Display results in a table | `true`, `false` | `false` |
-| `--pattern` | Regex pattern to match repository names | `string` | `""` |
-| `--fetch` | Fetch all updates from remotes | `true`, `false` | `false` |
-| `--pull` | Pull all updates from remotes | `true`, `false` | `false` |
-| `--push` | Push all local updates to remotes | `true`, `false` | `false` |
-
-## Bulk Operations
-
-You can perform Git operations across all detected repositories:
-
-```bash
-# Fetch updates for all projects
-atlas.radar --fetch
-
-# Pull updates for all projects
-atlas.radar --pull
-
-# Push updates for all projects
-atlas.radar --push
-```
-
-## Build
-
-Built with [gobake](https://github.com/fezcode/gobake).
-
-```bash
+git clone https://github.com/fezcode/atlas.radar
+cd atlas.radar
 gobake build
 ```
 
-## License
+## ⌨️ Usage
 
-MIT
+### Basic Scan
+Scan the current directory for Git repositories:
+```bash
+atlas.radar
+```
+
+### Table View
+Show structured results in a table:
+```bash
+atlas.radar --table
+```
+
+### Filtering by Remotes
+Show only repositories that have no remotes (local-only):
+```bash
+atlas.radar --remote 0
+```
+
+### Bulk Update
+Fetch updates for all repositories matching a pattern:
+```bash
+atlas.radar --fetch --pattern atlas
+```
+
+### Options & Flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--show` | Filter repos (`all`, `clean`, `unclean`) | `all` |
+| `--watch` | Continuously monitor status | `false` |
+| `--table` | Display results in a table | `false` |
+| `--fetch` | Fetch updates for all matched repos | `false` |
+| `--pull` | Pull updates for all matched repos | `false` |
+| `--push` | Push updates for all matched repos | `false` |
+| `--pattern`| Regex pattern to match repo names | `""` |
+| `--remote` | Filter by number of remotes | `-1` |
+
+## 🏗️ Architecture & Philosophy
+
+- **Local-First:** Operates entirely on your local filesystem using native Git commands.
+- **Speed:** Optimized scanning that skips non-repository directories instantly.
+- **Design:** Built with `lipgloss` for a professional, high-fidelity terminal experience.
+
+## 📄 License
+MIT License - Copyright (c) 2026 FezCode.
