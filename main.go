@@ -273,10 +273,23 @@ func renderTable(statuses []*GitStatus) {
 			changes = cleanStyle.Render("clean")
 		}
 
+		var syncParts []string
+		if s.Ahead > 0 {
+			syncParts = append(syncParts, aheadStyle.Render(fmt.Sprintf("↑%d", s.Ahead)))
+		}
+		if s.Behind > 0 {
+			syncParts = append(syncParts, behindStyle.Render(fmt.Sprintf("↓%d", s.Behind)))
+		}
+		sync := branchStyle.Render("-")
+		if len(syncParts) > 0 {
+			sync = strings.Join(syncParts, " ")
+		}
+
 		rows = append(rows, []string{
 			s.Name,
 			s.Branch,
 			changes,
+			sync,
 			fmt.Sprintf("%d", s.Remotes),
 		})
 	}
@@ -284,7 +297,7 @@ func renderTable(statuses []*GitStatus) {
 	t := table.New().
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("#333333"))).
-		Headers("REPOSITORY", "BRANCH", "CHANGES", "REMOTES").
+		Headers("REPOSITORY", "BRANCH", "CHANGES", "SYNC", "REMOTES").
 		Rows(rows...)
 
 	t.StyleFunc(func(row, col int) lipgloss.Style {
